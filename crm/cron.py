@@ -70,3 +70,5 @@ def update_low_stock():
     except Exception as e:
         with open(LOG_STOCK, 'a') as f:
             f.write(f"{timestamp}: ERROR running stock update mutation: {e}\n")
+
+ updateLowStockProducts           
