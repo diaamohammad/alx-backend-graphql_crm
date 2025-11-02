@@ -1,7 +1,11 @@
 from celery import shared_task
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
-import datetime
+
+import requests
+import datetime # (اتأكد إن ده موجود برضه)
+from celery import shared_task
+# ... (باقي الكود)
 
 API_URL = "http://localhost:8000/graphql"
 LOG_FILE = "/tmp/crm_report_log.txt"
