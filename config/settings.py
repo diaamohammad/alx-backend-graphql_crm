@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+from celery.schedules import crontab
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'graphene_django',  #               # تطبيقك اللي كان موجود
     'django_crontab',
     'crm',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -130,9 +131,28 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 CRONJOBS = [
-    # المهمة 2: تسجيل نبضات القلب كل 5 دقائق
+   
     ('*/5 * * * *', 'crm.cron.log_crm_heartbeat'),
     
-    # المهمة 3: تحديث المخزون المنخفض كل 12 ساعة
+    
     ('0 */12 * * *', 'crm.cron.update_low_stock'),
 ]
+
+
+# الوسيط (البروكر) - استخدم Redis الذي قمت بتثبيته
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC' # أو التوقيت المفضل لك
+
+# ==================================
+# إعدادات CELERY BEAT (الجدولة)
+# ==================================
+CELERY_BEAT_SCHEDULE = {
+    'generate-crm-report-weekly': {
+        'task': 'crm.tasks.generate_crm_report', # المسار للمهمة التي سننشئها
+        'schedule': crontab(day_of_week='mon', hour=6, minute=0), # كل اثنين 6 صباحاً
+    },
+}

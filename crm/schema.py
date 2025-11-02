@@ -1,6 +1,6 @@
 import graphene
 from graphene_django.types import DjangoObjectType
-
+from crm.models import Product, Customer, Order
 # الآن نقدر نستورده بأمان
 from crm.models import Product 
 
@@ -54,4 +54,44 @@ class Mutation(graphene.ObjectType):
 # ==========================================================
 # 4. ربط الـ Schema
 # ==========================================================
+
+
+
+class CustomerType(DjangoObjectType):
+    class Meta:
+        model = Customer
+        fields = ("id", "name", "email")
+
+class OrderType(DjangoObjectType):
+    class Meta:
+        model = Order
+        fields = ("id", "customer", "created_at", "total_amount")
+
+# (كلاس الـ Query الحالي)
+class Query(graphene.ObjectType):
+    hello = graphene.String(default_value="Hello, CRM!")
+    all_products = graphene.List(ProductType)
+
+    def resolve_all_products(root, info):
+        return Product.objects.all()
+
+    # --- أضف هذه الإحصائيات المطلوبة للمهمة ---
+    total_customers = graphene.Int()
+    total_orders = graphene.Int()
+    total_revenue = graphene.Decimal()
+
+    def resolve_total_customers(root, info):
+        return Customer.objects.count()
+
+    def resolve_total_orders(root, info):
+        return Order.objects.count()
+
+    def resolve_total_revenue(root, info):
+        # استخدم aggregate لحساب المجموع
+        result = Order.objects.aggregate(total=Sum('total_amount'))
+        return result['total'] or 0
+    # ---------------------------------------------
+
+# ... (Mutation and Schema definition ...
+# (تأكد أن الـ schema = graphene.Schema(query=Query, mutation=Mutation) موجودة)
 schema = graphene.Schema(query=Query, mutation=Mutation)

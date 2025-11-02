@@ -1,12 +1,17 @@
 from django.db import models
 
-# (ممكن تضيف موديل Customer و Order لو حبيت، بس ده المهم)
+class Customer(models.Model):
+    name = models.CharField(max_length=255)
+    email = models.EmailField(unique=True)
+    # ...
 
 class Product(models.Model):
     name = models.CharField(max_length=255)
-    stock = models.IntegerField(default=0) # التاسك 3 بيعتمد على الحقل ده
+    stock = models.IntegerField(default=0)
+    # ...
 
-    def __str__(self):
-        return self.name
-
-# ضيف أي موديلز تانية مطلوبة منك هنا...
+class Order(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders')
+    created_at = models.DateTimeField(auto_now_add=True)
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0) # <-- التاسك يعتمد على هذا
+    # ...
